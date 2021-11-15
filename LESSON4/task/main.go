@@ -8,7 +8,7 @@ import (
 )
 
 var operationsSlice []float64 //создаем слайс для сохранение ответов операций
-var primeSlice []float64 // создаем слайс для сохранения ответов простых чисел
+var primeSlice [][]float64 // создаем слайс для сохранения ответов простых чисел
 
 
 
@@ -35,29 +35,28 @@ func Calc() {
 	switch op {
 	case "+":
 		res = a + b
-		operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
+
 	case "-":
 		res = a - b
-		operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
+		//operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
 	case "*":
 		res = a * b
-		operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
+		//operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
 	case "/":
 		if b == 0 {
 			fmt.Println("Ошибка на ноль делить нельзя")
 		}
 		res = a / b
-		operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
-
+		//operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
 	case "sqrt":
 		res = math.Sqrt(float64(a))
-		operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
+		//operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
 	case "^":
 		res = math.Pow(float64(a),float64(b))
-		operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
+		//operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
 	case "prime":
 		startAt := time.Now() //Время старта
-
+		var prePrimeSlice []float64
 		b := int(math.Floor(a))
 		for j := 2; j < b; j++ { //перебераем числа от 2 до <a,так как знаем что 1 не простое число то и перебор делаем с 2
 			var flag bool = true
@@ -77,22 +76,27 @@ func Calc() {
 				}
 			}
 			if flag == true {
-				fmt.Println(j, "- простое число")
-				primeSlice = append(primeSlice, float64(j))//добавляем результат в слайс простых чисел
+
+				//fmt.Println(j, "- простое число")
+				prePrimeSlice = append(prePrimeSlice, float64(j))//добавляем результат в слайс простых чисел
 			}
 		}
+		primeSlice = append(primeSlice, prePrimeSlice)//ДА добовление в массив можно вынести за case. неподумал об этом
 		fmt.Println("Проверка прошла за: ", time.Now().Sub(startAt)) //Высчитываем продолжительность проверки
 	case "quit":
 			os.Exit(1)
 	case "result":
-		resultSlice := append(operationsSlice, primeSlice...)//к срезу operationsSlice добавляем срез primeSlice
-		fmt.Println("     Результат операций:",operationsSlice)
-		fmt.Println("Результат простых чисел:",primeSlice)
-		fmt.Println("        Общий результат:",resultSlice)//выводим общий срез
+		for id, val := range operationsSlice {
+			fmt.Println("Результат операции", id,"=",val)
+		}
+
+		for id, val := range primeSlice {
+			fmt.Println("Результат операции с простми чисел", id,"=",val)
+		}
 	default:
 		fmt.Println("Операция выбрана неверно")
 		break
 	}
-
+	operationsSlice = append(operationsSlice, res)//добавляем результат в слайс операций
 	fmt.Printf("Результат выполнения операции: %.4f\n", res)
 }
