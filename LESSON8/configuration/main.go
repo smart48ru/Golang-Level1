@@ -20,22 +20,21 @@ type Config struct {
 }
 
 var (
-	defPort = "8080"
-	defJaeger = "http://jaeger:16686"
-	defSentry = "http://sentry:9000"
-	defDburl = "sql://db-user:db-password@sql-db:3306"
-	defKafka = "kafka:9092"
+	defPort     = "8080"
+	defJaeger   = "http://jaeger:16686"
+	defSentry   = "http://sentry:9000"
+	defDburl    = "sql://db-user:db-password@sql-db:3306"
+	defKafka    = "kafka:9092"
 	defConfFile = "config.yaml"
-	defAppId = "tesapptid"
-	defAppKey = "testkey"
+	defAppId    = "tesapptid"
+	defAppKey   = "testkey"
 )
-
 
 func ConfigurationFlag() Config {
 	Cfg := Config{}
 
-	conf := flag.Bool("c", false, "configuration file mode" )
-	confFile := flag.String("cfg",defConfFile, "config file name" )
+	conf := flag.Bool("c", false, "configuration file mode")
+	confFile := flag.String("cfg", defConfFile, "config file name")
 	flag.StringVar(&Cfg.Port, "port", defPort, "network port")
 	flag.StringVar(&Cfg.DbUrl, "dburl", defDburl, "database url")
 	flag.StringVar(&Cfg.JaegerUrl, "jaeger", defJaeger, "jaeger url")
@@ -45,16 +44,16 @@ func ConfigurationFlag() Config {
 	flag.StringVar(&Cfg.SomeAppKey, "appkey", defAppKey, "app key")
 	flag.Parse()
 
-	if *conf{
+	if *conf {
 		fmt.Println("Loading config file", *confFile)
 		fileCfg := Config{}
 		yamlFile, err := ioutil.ReadFile(*confFile)
 		if err != nil {
-			fmt.Println("Ошибка чтения конфигурационного файла : ",err)
+			fmt.Println("Ошибка чтения конфигурационного файла : ", err)
 		}
 		err = yaml.Unmarshal(yamlFile, &fileCfg)
 		if err != nil {
-			fmt.Println("Неверный формат нфигурационного файла : ",err)
+			fmt.Println("Неверный формат нфигурационного файла : ", err)
 		}
 		return fileCfg
 	} else {

@@ -7,8 +7,7 @@ import (
 	"log"
 )
 
-
-func main(){
+func main() {
 	cfg := configuration.ConfigurationFlag()
 	d, err := yaml.Marshal(&cfg)
 	if err != nil {
