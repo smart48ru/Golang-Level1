@@ -58,7 +58,6 @@ func ConfigurationFlag() Config {
 		}
 		return fileCfg
 	} else {
-		fmt.Println("NO")
 		if len(Cfg.JaegerUrl) != 0 {
 			churl := checkUrl(Cfg.JaegerUrl)
 			if !churl {
@@ -74,8 +73,8 @@ func ConfigurationFlag() Config {
 				os.Exit(0)
 			}
 		}
+		return Cfg
 	}
-	return Cfg
 }
 
 //checkUrl - Проверяет валидность url на Scheme и Host, возвращает false если схема не верный формат схемы или хостнаме не указан
