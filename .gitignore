@@ -1,10 +1,4 @@
-<<<<<<< refs/remotes/origin/main
 githelp.txt
 .DS_Store
 .idea/*
-=======
-.DS_Store
-.idea/
-githelp.txt
-
->>>>>>> Home Work2 Kuznetsov Stas
+go.sum
