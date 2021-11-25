@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-//Value - Структура вводных данных
+//Value - Структура значений вводных данных
 type Value struct {
 	a float64
 	b float64
