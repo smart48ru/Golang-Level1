@@ -10,7 +10,6 @@ import (
 func main() {
 	cfg, err := configuration.ConfigurationFlag()
 	if err != nil {
-		fmt.Println(cfg)
 		log.Fatalf("error: %v", err)
 	}
 	fmt.Println(cfg)

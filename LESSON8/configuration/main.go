@@ -23,7 +23,6 @@ type Config struct {
 func (с Config) String() (string, error) {
 	d, err := yaml.Marshal(с)
 	if err != nil {
-		//log.Fatalf("error: %v", err)
 		return "", fmt.Errorf("%e", err)
 	}
 	return fmt.Sprintf("%s", string(d)), nil
@@ -48,15 +47,15 @@ func ConfigurationFlag() (Config, error) {
 	flag.StringVar(&Cfg.SomeAppId, "appid", defAppId, "app id")
 	flag.StringVar(&Cfg.SomeAppKey, "appkey", defAppKey, "app key")
 	flag.Parse()
-
-	if len(Cfg.JaegerUrl) != 0 {
+	fmt.Println(len(Cfg.SentryUrl))
+	if len(Cfg.JaegerUrl) >= 0 {
 		churl := checkUrl(Cfg.JaegerUrl)
 		if !churl {
 			err := fmt.Errorf("невреное значение параметра --jaeger %q", Cfg.JaegerUrl)
 			return ErrCfg, err
 		}
 	}
-	if len(Cfg.SentryUrl) != 0 {
+	if len(Cfg.SentryUrl) >= 0 {
 		churl := checkUrl(Cfg.SentryUrl)
 		if !churl {
 			err := fmt.Errorf("невреное значение параметра  --sentry %q", Cfg.SentryUrl)
