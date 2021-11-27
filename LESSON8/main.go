@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/smart48ru/Golang-Level1/LESSON8/configuration"
-	"gopkg.in/yaml.v2"
 	"log"
+
+	"github.com/smart48ru/Golang-Level1/LESSON8/configuration"
 )
 
 func main() {
-	cfg := configuration.ConfigurationFlag()
-	d, err := yaml.Marshal(&cfg)
+	cfg, err := configuration.ConfigurationFlag()
 	if err != nil {
+		fmt.Println(cfg)
 		log.Fatalf("error: %v", err)
 	}
-	fmt.Printf("!! Program configuration !!\n%s\n\n", string(d))
-
+	fmt.Println(cfg)
 }
