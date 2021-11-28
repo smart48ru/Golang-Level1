@@ -12,6 +12,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-
-	fmt.Println(cfg.String())
+	cfgString,err  := cfg.String()
+	if err != nil{
+		fmt.Println(err)
+	}
+	fmt.Println(cfgString)
 }
