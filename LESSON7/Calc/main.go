@@ -5,31 +5,38 @@ import (
 	"math"
 	"os"
 )
-//Value - Структура вводных данных
+
+//Value - Структура значений вводных данных
 type Value struct {
 	a float64
 	b float64
 }
+
 //Addition - метод сложения
 func (s *Value) Addition() float64 {
 	return s.a + s.b
 }
+
 //Subtraction - метод вычитания
 func (s *Value) Subtraction() float64 {
 	return s.a - s.b
 }
+
 //Multiplication - метод умножения
 func (s *Value) Multiplication() float64 {
 	return s.a * s.b
 }
+
 //Division - метод деления
 func (s *Value) Division() float64 {
 	return s.a / s.b
 }
+
 //Square - метод кореньквадратный
 func (s *Value) Square() float64 {
 	return math.Sqrt(float64(s.a))
 }
+
 //AreaCalculated - интерфейс для функций калькулятора
 type AreaCalculated interface {
 	Addition() float64
@@ -39,8 +46,7 @@ type AreaCalculated interface {
 	Square() float64
 }
 
-
-func main()  {
+func main() {
 	var d, e, res float64
 	var op string
 
@@ -52,27 +58,27 @@ func main()  {
 
 	fmt.Print("Введите операцию (+, -, *, /, sqrt, ^, quit): ")
 	fmt.Scanln(&op)
-	a := &Value{a: d, b: e}
+	val := &Value{a: d, b: e}
 	switch op {
 	case "+":
-		res = AreaCalculated.Addition(a)
+		res = AreaCalculated.Addition(val)
 	case "-":
-		res = AreaCalculated.Subtraction(a)
+		res = AreaCalculated.Subtraction(val)
 	case "*":
-		res = AreaCalculated.Multiplication(a)
+		res = AreaCalculated.Multiplication(val)
 	case "/":
 		if e == 0 {
 			fmt.Println("Ошибка на ноль делить нельзя")
 			return
 		}
-		res = AreaCalculated.Division(a)
+		res = AreaCalculated.Division(val)
 	case "sqrt":
-		res = AreaCalculated.Square(a)
+		res = AreaCalculated.Square(val)
 	case "quit":
 		os.Exit(1)
 	default:
 		fmt.Println("Операция выбрана неверно")
-		break
+		os.Exit(1)
 	}
 	fmt.Printf("Результат выполнения операции: %.2f\n", res)
 }
