@@ -7,72 +7,66 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/url"
-	"strings"
 )
 
 var Cfg = Config{}
-var ErrCfg = Config{}
-var FileCfg = Config{}
 
 type Config struct {
-	Port        string `yaml:"port",json:"port"`
-	DbUrl       string `yaml:"db_url",json:"dburl"`
-	JaegerUrl   string `yaml:"jaeger_url",json:"jaegerurl"`
-	SentryUrl   string `yaml:"sentry_url",json:"sentryurl"`
-	KafkaBroker string `yaml:"kafka_broker",json:"kafkabroker"`
-	SomeAppId   string `yaml:"some_app_id",json:"someappid"`
-	SomeAppKey  string `yaml:"some_app_key",json:"someappkey"`
+	Port        string `yaml:"port" json:"port"`
+	DbUrl       string `yaml:"db_url" json:"dburl"`
+	JaegerUrl   string `yaml:"jaeger_url" json:"jaegerurl"`
+	SentryUrl   string `yaml:"sentry_url" json:"sentryurl"`
+	KafkaBroker string `yaml:"kafka_broker" json:"kafkabroker"`
+	SomeAppId   string `yaml:"some_app_id" json:"someappid"`
+	SomeAppKey  string `yaml:"some_app_key" json:"someappkey"`
 }
 
 const (
-	defPort     = "8080"
-	defJaeger   = "http://jaeger:16686"
-	defSentry   = "http://sentry:9000"
-	defDburl    = "sql://db-user:db-password@sql-db:3306"
-	defKafka    = "kafka:9092"
-	defConfFile = "config.yaml"
-	defAppId    = "tesapptid"
-	defAppKey   = "testkey"
+	defaultPort     = "8080"
+	defaultJaeger   = "http://jaeger:16686"
+	defaultSentry   = "http://sentry:9000"
+	defaultDBurl    = "sql://db-user:db-password@sql-db:3306"
+	defaultKafka    = "kafka:9092"
+	defaultConfFile = "config.yaml"
+	defaultAppId    = "tesapptid"
+	defaultAppKey   = "testkey"
 )
 
 //String - метод вывода конфига (незнаю долден ли он возвращать ошибку)!!
-func (с Config) String() (string, error) {
+func (с *Config) String() (string, error) {
 	d, err := yaml.Marshal(с)
 	if err != nil {
-		return "", fmt.Errorf("%e", err)
+		return " ", err
 	}
 	return fmt.Sprintf("%s", string(d)), nil
 }
 
-func GetConfiguration() (Config, error) {
+func GetConfiguration() (*Config, error) {
 	conf := flag.Bool("c", false, "configuration file mode")
-	confFile := flag.String("cfg", defConfFile, "config file name")
-	flag.StringVar(&Cfg.Port, "port", defPort, "network port")
-	flag.StringVar(&Cfg.DbUrl, "dburl", defDburl, "database url")
-	flag.StringVar(&Cfg.JaegerUrl, "jaeger", defJaeger, "jaeger url")
-	flag.StringVar(&Cfg.SentryUrl, "sentry", defSentry, "sentry url")
-	flag.StringVar(&Cfg.KafkaBroker, "kafka", defKafka, "kafka broker")
-	flag.StringVar(&Cfg.SomeAppId, "appid", defAppId, "app id")
-	flag.StringVar(&Cfg.SomeAppKey, "appkey", defAppKey, "app key")
+	confFile := flag.String("cfg", defaultConfFile, "config file name")
+	confFormat := flag.String("format", defaultConfFile, "config file format. Supported json, yaml ")
+	flag.StringVar(&Cfg.Port, "port", defaultPort, "network port")
+	flag.StringVar(&Cfg.DbUrl, "dburl", defaultDBurl, "database url")
+	flag.StringVar(&Cfg.JaegerUrl, "jaeger", defaultJaeger, "jaeger url")
+	flag.StringVar(&Cfg.SentryUrl, "sentry", defaultSentry, "sentry url")
+	flag.StringVar(&Cfg.KafkaBroker, "kafka", defaultKafka, "kafka broker")
+	flag.StringVar(&Cfg.SomeAppId, "appid", defaultAppId, "app id")
+	flag.StringVar(&Cfg.SomeAppKey, "appkey", defaultAppKey, "app key")
 	flag.Parse()
 
 	if *conf {
-		content, err := checkExeption(*confFile)
+		content, err := checkCfgFromFile(*confFile, *confFormat)
 		if err != nil {
-			return content, err
+			return nil, err
 		}
 		return content, nil
 	} else {
-		churl := checkUrl(Cfg.JaegerUrl)
-		if !churl {
-			return ErrCfg, fmt.Errorf("невреное значение параметра --jaeger", Cfg.JaegerUrl)
-		}
-		churl = checkUrl(Cfg.SentryUrl)
-		if !churl {
-			return ErrCfg, fmt.Errorf("невреное значение параметра --sentry", Cfg.SentryUrl)
+		err := paramValidation()
+		if err != nil {
+			return nil, err
 		}
 	}
-	return Cfg, nil
+	return &Cfg, nil
 }
 
 //checkUrl - Проверяет валидность url на Scheme и Host, возвращает false если схема не верный формат схемы или хостнаме не указан
@@ -81,75 +75,75 @@ func checkUrl(str string) bool {
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
-//checkExeption функция проверяет расширение переданного конфигурационного файла
-func checkExeption(f string) (Config, error) {
-	extension := strings.Split(f, ".")
-	lenSplit := len(extension)
-	if lenSplit > 1 && extension[lenSplit-1] == "yaml" {
-		_, err := laodYamlConfig(f)
+//checkCfgFromFile - Функция проверки формата и загрузки файла
+func checkCfgFromFile(f, format string) (*Config, error) {
+	switch format {
+	case "yaml":
+		err := laodYamlConfig(f)
 		if err != nil {
-			return ErrCfg, err
+			return nil, err
 		}
-	} else if lenSplit > 1 && extension[lenSplit-1] == "json" {
-		_, err := laodJsonConfig(f)
+	case "json":
+		err := laodJsonConfig(f)
 		if err != nil {
-			return ErrCfg, err
+			return nil, err
 		}
-	} else {
-		return ErrCfg, fmt.Errorf("Поддерживаемое расширение и формат конфигурационных файлов .yaml и .json")
+	default:
+		return nil, fmt.Errorf(`Поддерживаемый формат конфигурационных файлов yaml и json. exemple --format="json"`)
 	}
-	return FileCfg, nil
+	return &Cfg, nil
 }
 
 //laodYamlConfig функуия загрузки конфигурации из вайла yaml принимает имя файла, возвращает  структуру Config и ошибку
-func laodYamlConfig(f string) (Config, error) {
-	fmt.Println("Loading config file", f)
+func laodYamlConfig(f string) error {
+	fmt.Println("Loading yaml config file", f)
 	yamlFile, err := ioutil.ReadFile(f)
 	if err != nil {
-		return ErrCfg, err
+		return err
 	}
-	err = yaml.Unmarshal(yamlFile, &FileCfg)
+	err = yaml.Unmarshal(yamlFile, &Cfg)
 	if err != nil {
-		return ErrCfg, err
+		return fmt.Errorf("Неверный формат конфигурационного файла: %v", err)
 	}
-	churl := checkUrl(FileCfg.JaegerUrl)
-	if !churl {
-		return ErrCfg, fmt.Errorf("невреное значение параметра --jaeger ", FileCfg.JaegerUrl)
-	}
-	churl = checkUrl(FileCfg.SentryUrl)
-	if !churl {
-		return ErrCfg, fmt.Errorf("невреное значение параметра --sentry ", FileCfg.SentryUrl)
-	}
-	return FileCfg, nil
+	return nil
 }
 
 //laodJsonConfig функуия загрузки конфигурации из вайла json принимает имя файла, возвращает  структуру Config и ошибку
-func laodJsonConfig(f string) (Config, error) {
-	fmt.Println("Loading config file", f)
+func laodJsonConfig(f string) error {
+	fmt.Println("Loading json config file", f)
 	jsonFile, err := configFile(f)
 	if err != nil {
-		return ErrCfg, err
+		return err
 	}
-	err = json.Unmarshal(jsonFile, &FileCfg)
+	err = json.Unmarshal(jsonFile, &Cfg)
 	if err != nil {
-		return ErrCfg, fmt.Errorf("Неверный формат конфигурационного файла : ", err)
+		return fmt.Errorf("Неверный формат конфигурационного файла: %v", err)
 	}
-	churl := checkUrl(FileCfg.JaegerUrl)
-	if !churl {
-		return ErrCfg, fmt.Errorf("невреное значение параметра --jaeger ", FileCfg.JaegerUrl)
-	}
-	churl = checkUrl(FileCfg.SentryUrl)
-	if !churl {
-		return ErrCfg, fmt.Errorf("невреное значение параметра --sentry ", FileCfg.SentryUrl)
-	}
-	return FileCfg, nil
+	return nil
 }
 
-//configFile функция чтения файла пнинимает имя файла возвращает []byte
+//configFile функция чтения и валидации параметров файла пнинимает имя файла возвращает []byte
 func configFile(f string) ([]byte, error) {
-	jsonFile, err := ioutil.ReadFile(f)
+	file, err := ioutil.ReadFile(f)
 	if err != nil {
-		return nil, fmt.Errorf("Ошибка чтения конфигурационного файла : ", err)
+		return nil, fmt.Errorf("Ошибка чтения конфигурационного файла: %v ", err)
 	}
-	return jsonFile, nil
+	err = paramValidation()
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
+//paramValidation - Функция валидации параметров jaeger и sentry
+func paramValidation() error {
+	churl := checkUrl(Cfg.JaegerUrl)
+	if !churl {
+		return fmt.Errorf("невреное значение параметра --jaeger = %v", Cfg.JaegerUrl)
+	}
+	churl = checkUrl(Cfg.SentryUrl)
+	if !churl {
+		return fmt.Errorf("невреное значение параметра --sentry = %v", Cfg.SentryUrl)
+	}
+	return nil
 }
