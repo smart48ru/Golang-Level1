@@ -42,9 +42,9 @@ func (с *Config) String() (string, error) {
 }
 
 func GetConfiguration() (*Config, error) {
-	conf := flag.Bool("c", false, "configuration file mode")
-	confFile := flag.String("cfg", defaultConfFile, "config file name")
-	confFormat := flag.String("format", defaultConfFile, "config file format. Supported json, yaml ")
+	Conf := flag.Bool("c", false, "configuration file mode")
+	ConfFile := flag.String("cfg", defaultConfFile, "config file name")
+	ConfFormat := flag.String("format", defaultConfFile, "config file format. Supported json, yaml ")
 	flag.StringVar(&Cfg.Port, "port", defaultPort, "network port")
 	flag.StringVar(&Cfg.DbUrl, "dburl", defaultDBurl, "database url")
 	flag.StringVar(&Cfg.JaegerUrl, "jaeger", defaultJaeger, "jaeger url")
@@ -54,8 +54,8 @@ func GetConfiguration() (*Config, error) {
 	flag.StringVar(&Cfg.SomeAppKey, "appkey", defaultAppKey, "app key")
 	flag.Parse()
 
-	if *conf {
-		content, err := СheckCfgFromFile(*confFile, *confFormat)
+	if *Conf {
+		content, err := СheckCfgFromFile(*ConfFile, *ConfFormat)
 		if err != nil {
 			return nil, err
 		}
@@ -102,8 +102,13 @@ func laodYamlConfig(f string) error {
 		return err
 	}
 	err = yaml.Unmarshal(yamlFile, &Cfg)
+	//fmt.Println(Cfg.JaegerUrl)
 	if err != nil {
 		return fmt.Errorf("Неверный формат конфигурационного файла: %v", err)
+	}
+	err = ParamValidation()
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -119,6 +124,10 @@ func laodJsonConfig(f string) error {
 	if err != nil {
 		return fmt.Errorf("Неверный формат конфигурационного файла: %v", err)
 	}
+	err = ParamValidation()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -127,10 +136,6 @@ func ConfigFile(f string) ([]byte, error) {
 	file, err := ioutil.ReadFile(f)
 	if err != nil {
 		return nil, fmt.Errorf("Ошибка чтения конфигурационного файла: %v ", err)
-	}
-	err = ParamValidation()
-	if err != nil {
-		return nil, err
 	}
 	return file, nil
 }
